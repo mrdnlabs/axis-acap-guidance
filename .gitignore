@@ -1,0 +1,13 @@
+# Development-time device credentials — never commit
+.env.devices
+.env
+.env.*
+
+# Build artifacts
+*.eap
+*.o
+build/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
