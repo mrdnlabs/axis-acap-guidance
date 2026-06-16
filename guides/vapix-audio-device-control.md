@@ -50,7 +50,9 @@ devices[].outputs[].connectionTypes[].signalingTypes[].channels[].mute
 
 Call `getDevicesSettings` first and inspect the response to find the correct `connectionType`, `signalingType`, and `channel` IDs for each output on your device.
 
-## Device Topologies (Confirmed)
+## Device Topologies (empirically confirmed)
+
+The IDs below were read back from `getDevicesSettings` on the listed devices. Axis does **not** publish per-model channel/connectionType/signalingType IDs, so there is no official source for these tables — always re-run `getDevicesSettings` to confirm on your device and firmware.
 
 ### Axis C6110-E
 
@@ -66,3 +68,9 @@ Call `getDevicesSettings` first and inspect the response to find the correct `co
 | OUT0 — Speaker | `"0"` | `"internal"` | `"unbalanced"` | `["0"]` |
 
 All devices use `dev_id = "0"`.
+
+---
+
+## References
+
+- [VAPIX — Audio Device Control](https://developer.axis.com/vapix/audio-systems/audio-device-control/) — `audiodevicecontrol.cgi`, the `getDevicesSettings` / `setDevicesSettings` methods, and the data model in which `mute` is defined only at the **channel** level (`devices[].outputs[].connectionTypes[].signalingTypes[].channels[].mute`). There is no `outputs[].mute` field — which is exactly why a top-level mute is accepted and silently ignored.

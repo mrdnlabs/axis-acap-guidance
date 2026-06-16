@@ -65,7 +65,7 @@ If you can't force Digest (e.g. you're calling over HTTPS under the default poli
 - Use `CURLAUTH_ANY` / `--anyauth` in clients instead of pinning a scheme.
 - When the negotiated scheme is Basic, treat TLS as the only thing protecting the password — verify certs where you can, and document the trust boundary where you can't.
 
-## Reference
+## References
 
 - [Network settings — VAPIX](https://developer.axis.com/vapix/network-video/network-settings/) (`Network.HTTP.AuthenticationPolicy`)
 - [VAPIX authentication](https://developer.axis.com/vapix/authentication/)

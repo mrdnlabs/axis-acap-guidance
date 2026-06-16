@@ -51,7 +51,7 @@ Design accordingly: mode switches and other real-time controls should call `ax_p
 
 ## Local VAPIX calls must use 127.0.0.1
 
-When making VAPIX calls from within an ACAP to the same device, always use `http://127.0.0.1/axis-cgi/`. Using the device's external LAN IP will break on any device with a different IP than the one you developed on.
+When making VAPIX calls from within an ACAP to the same device, always use a loopback address — never the device's external LAN IP (it will break on any device with a different IP than the one you developed on). Use **`127.0.0.12`** when authenticating with D-Bus service-account credentials (that's the virtual host they're bound to — see [vapix-local-auth-from-acap.md](./vapix-local-auth-from-acap.md)); `127.0.0.1` is the plain loopback for calls that don't depend on those credentials.
 
 ---
 
@@ -115,3 +115,18 @@ The runtime accepts `password` (no suffix) or `password:maxlen=N`. The schema va
 tar -xOzf myapp.eap param.conf | grep MyPasswordField
 # Expect: MyPasswordField="" type="password:maxlen=N"
 ```
+
+---
+
+## References
+
+- [Manifest schema — field descriptions](https://developer.axis.com/acap/reference/manifest-schemas/manifest-v1/schema-field-descriptions-v1.10.0/) — `settingPage` ("must be located in directory 'html'"), `embeddedSdkVersion`, `runMode`, and the `reverseProxy`/`httpConfig` fields.
+- [Manifest schemas — general info / version history](https://developer.axis.com/acap/reference/manifest-schemas/general-info/) — schema↔SDK mapping (schema 1.9.0 ← SDK 12.8; 2.0.0 ← SDK 12.10) and the note that schema 2.0.0 **removed** `embeddedSdkVersion`.
+- [AXParameter — `ax_parameter.h` types](https://developer.axis.com/acap/api/native-sdk-api/) — the `Password` (masked, `*`), `Hidden` (hidden in UI only), and deprecated `WriteOnly` ("can neither be read by axparameter nor by param.cgi") parameter types.
+- [ACAP 12.7 release notes](https://developer.axis.com/acap/release-notes/12.7/) — parameter changes recorded in the audit log, with `password` and `writeonly` values masked.
+- [VAPIX — Application API (`control.cgi`)](https://developer.axis.com/vapix/applications/application-api/) — `action=restart` / `start` / `stop` / `remove`.
+- [VAPIX — parameter management (`param.cgi`)](https://developer.axis.com/vapix/network-video/parameter-management/) — `action=list&group=…` to discover stored parameter names.
+
+> **Note on `embeddedSdkVersion`:** Axis's field description frames it as the *minimum required SDK version the device must support* (a compatibility floor, set to `"3.0"`), rather than literally a "runtime/framework build number." The practical guidance above (use `"3.0"` on v1.x schemas, never `"4.0"`, omit on schema ≥ 2.0.0) is unaffected.
+>
+> Several items in this guide are **empirical/observed** and have no official source: the in-container schema path, the exact build-error string, `acap-build` merging fields from a stale `.eap`, the stale-`COPY` → `type="String"` symptom, the bash `!` history-expansion mangling, the `ChunkedEncodingError`-on-restart symptom, and the parameter-group capitalization rule. Treat these as field notes, verified on AXIS OS 12.x but not documented by Axis.

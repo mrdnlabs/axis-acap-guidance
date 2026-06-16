@@ -118,3 +118,13 @@ Pair with `.dockerignore` (use `*.eap`, not `app/*.eap`, so root-level builds ar
 .git
 docs
 ```
+
+---
+
+## References
+
+The pitfalls in this guide are **empirical** — observed when building with Docker on WSL2 against the Windows filesystem (`/mnt/c/`). They are not Axis-documented behavior; the underlying tooling is, though:
+
+- [Build, install and run an ACAP application](https://developer.axis.com/acap/develop/build-install-run/) — the official `acap-build` / Docker build flow these notes work around.
+- [`axisecp/acap-native-sdk` on Docker Hub](https://hub.docker.com/r/axisecp/acap-native-sdk) — the SDK images referenced in the `FROM` line.
+- WSL filesystem behavior is general (not Axis-specific): see Microsoft's [WSL file-permissions docs](https://learn.microsoft.com/en-us/windows/wsl/file-permissions) for why `/mnt/c/` files report `777`.

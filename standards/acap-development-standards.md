@@ -73,7 +73,7 @@ All projects use the **MIT License** by default.
 
 Both FastCGI and reverse proxy inherit device authentication (digest auth), TLS termination, and CSP headers. A raw HTTP server on an open port bypasses all of these.
 
-**Reverse proxy gotchas (from hard-won experience):**
+**Reverse proxy gotchas (from hard-won experience — see the [reverse proxy guide](../guides/acap-reverse-proxy-guide.md) and [WSL build pitfalls](../guides/acap-wsl-build-pitfalls.md) for the full detail):**
 - Apache forwards the full URI unchanged — register handlers at `/local/<appName>/<apiPath>/...`
 - WSL 777 file permissions silently prevent proxy rule creation — always `chmod 644`/`755` in the Dockerfile
 - Old `.eap` files in the build context cause manifest field merging — use `.dockerignore`
@@ -137,7 +137,7 @@ This is the only option Axis documents (`ax_parameter.h`, present since the ACAP
   - `"admin"` for configuration endpoints
   - `"operator"` for operational controls
   - `"viewer"` for read-only status
-  - `"anonymous"` only when explicitly required and after careful consideration
+  - `"anonymous"` only when explicitly required and after careful consideration — note this level is valid for `reverseProxy` entries only; `httpConfig` (FastCGI) supports `admin`/`operator`/`viewer` but not `anonymous`
 - Separate admin and viewer endpoints into different proxy/CGI entries with different access levels
 
 ---
@@ -333,3 +333,17 @@ Key workflow requirements for agentic development:
 | Commit `.eap` files or credentials | Add to `.gitignore` from day one |
 | Use placeholder vendor metadata | Use real values or omit |
 | Implement custom auth | Leverage Axis OS auth via proxy/FastCGI |
+
+---
+
+## References / Further reading
+
+Official Axis sources for the technical claims in this document. The platform moves quickly — always confirm against the docs for your target SDK / AXIS OS version.
+
+- [Supported APIs — ACAP Native SDK](https://developer.axis.com/acap/reference/supported-apis/) — the SDK preference table in §5 (VDO, AXEvent, Axoverlay, Larod, AXStorage, AXSerialPort, AXParameter, plus bundled libs: FastCGI, OpenSSL, Curl, Jansson, Cairo).
+- [Manifest schemas — overview & version history](https://developer.axis.com/acap/reference/manifest-schemas/general-info/) and the [v2.0.0 field descriptions](https://developer.axis.com/acap/reference/manifest-schemas/manifest-v2/schema-field-descriptions-v2.0.0/) — `schemaVersion`/`runMode`/`settingPage`/`paramConfig`, the `reverseProxy` vs `httpConfig` `access` values (only `reverseProxy` allows `anonymous`), and the removal of `embeddedSdkVersion` in 2.0.0 (§4.2, §4.5, §7).
+- [Web server via reverse proxy](https://developer.axis.com/acap/develop/web-server-via-reverse-proxy/) — Apache reverse proxy inherits authentication and TLS (§4.2).
+- [VAPIX access for ACAP applications](https://developer.axis.com/acap/develop/VAPIX-access-for-ACAP-applications/) — D-Bus `GetCredentials`, the `127.0.0.12` virtual host, keep-in-memory guidance (§4.3).
+- [ACAP 12.7 release notes](https://developer.axis.com/acap/release-notes/12.7/) — `password` / `writeonly` parameter values are masked in the audit log (§4.3).
+- [AXIS OS Hardening Guide](https://help.axis.com/en-us/axis-os-hardening-guide) — device security baseline an ACAP should not weaken (§4).
+- [acap-native-sdk-examples](https://github.com/AxisCommunications/acap-native-sdk-examples) (Apache-2.0) — official example code referenced throughout these standards.

@@ -63,6 +63,7 @@ snprintf(url, sizeof(url),
 
 - **Slots are `#D1` through `#D16`, not `#D0`.** There is no slot zero.
 - **The wrong CGI path is easy to guess.** The path is `dynamicoverlay.cgi`, not `videooutput/setdynamicoverlays.cgi` or other variations. Verify on your target device.
+- **Two CGIs share the base name — don't confuse them.** This guide covers the query-string CGI `/axis-cgi/dynamicoverlay.cgi` (`action=settext` + `text_index`). Axis also ships a separate JSON-method CGI at `/axis-cgi/dynamicoverlay/dynamicoverlay.cgi` (a `setText` method keyed by an `identity` parameter) — a different path with a different request shape.
 - **The operator must add the token to the overlay.** The ACAP can only set the text value — it cannot create the overlay configuration. If `#D12` is not in the overlay text, updating `text_index=12` has no visible effect.
 - **URL-encode the text value.** Spaces, special characters, and non-ASCII text must be properly encoded.
 - **Dynamic text vs. custom overlay.** Dynamic text depends on the operator's OSD configuration. For a fully ACAP-controlled overlay (independent of OSD settings), use the `axoverlay` API instead. Consider supporting both modes.
@@ -76,3 +77,10 @@ snprintf(url, sizeof(url),
 | Dynamic text (`dynamicoverlay.cgi`) | Simple status text, low-friction integration | Yes — operator must add `#D<n>` token |
 | Custom overlay (`axoverlay` API) | Rich graphics, large text, full ACAP control | No — ACAP manages its own overlay |
 | Both | Maximum flexibility for different deployments | Partially |
+
+---
+
+## References
+
+- [VAPIX — Overlay API](https://developer.axis.com/vapix/network-video/overlay-api/) — `/axis-cgi/dynamicoverlay.cgi?action=settext` with `text_index` `1...16`, which "maps text to the modifiers `#D1...#D16`." (Also documents the separate JSON `setText` method at `/axis-cgi/dynamicoverlay/dynamicoverlay.cgi`.)
+- [`axoverlay` example (ACAP Native SDK)](https://github.com/AxisCommunications/acap-native-sdk-examples/tree/main/axoverlay) — the `axoverlay` API for fully ACAP-controlled custom overlays, independent of OSD configuration.

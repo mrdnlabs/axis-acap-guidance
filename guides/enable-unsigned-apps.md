@@ -1,6 +1,6 @@
 # Enabling unsigned ACAP apps programmatically
 
-On AXIS OS 12.x, unsigned apps are disabled by default. The camera can be configured over VAPIX with the ACAP application configuration CGI.
+From AXIS OS 12.0, signing of ACAP applications is required by default (unsigned apps are disabled), but it can be toggled off over VAPIX with the ACAP application configuration CGI. The XML replies shown below are representative of the documented `<reply result="ok">…</reply>` shape — confirm the exact body on your firmware.
 
 ## Read current setting
 
@@ -41,3 +41,12 @@ Expected success response:
 - This is the supported programmatic path; no GUI interaction is required.
 - On AXIS OS 12.0 and later, the default is `false`.
 - After enabling it, unsigned `.eap` uploads via `/axis-cgi/applications/upload.cgi` will install successfully.
+- **Not future-proof.** Axis has signaled that signing may become mandatory (no toggle) in a future major release. Don't bake an "enable unsigned" step into long-lived automation — sign your packages instead where you can.
+
+---
+
+## References
+
+- [Accept or deny unsigned ACAP applications](https://developer.axis.com/acap/3/services-for-partners/accept-or-deny-unsigned-acap-applications/) — `config.cgi?action=get|set&name=AllowUnsigned&value=true|false`.
+- [VAPIX — Application API](https://developer.axis.com/vapix/applications/application-api/) — `/axis-cgi/applications/upload.cgi` for uploading `.eap` packages, and the `AllowUnsigned` parameter.
+- [ACAP 12.0 release notes](https://developer.axis.com/acap/release-notes/12.0/) — "From AXIS OS 12.0, signing of ACAP applications will be required by default, but can still be disabled with a toggle."

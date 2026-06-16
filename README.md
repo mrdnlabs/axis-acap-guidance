@@ -4,6 +4,19 @@ Standards, reusable prompts, and hard-won learnings for developing [Axis ACAP](h
 
 This is a vendor-neutral knowledge base distilled from real ACAP projects. It is not affiliated with or endorsed by Axis Communications. Technical claims were verified against official Axis documentation, but the platform moves quickly — **always confirm against the docs and your target firmware**, especially anything tied to a specific SDK or AXIS OS version.
 
+> _Last verified: June 2026, against AXIS OS 12.x / ACAP Native SDK 12.x. See the **References** section in each document for the official sources behind its claims._
+
+## Start here
+
+If you're beginning a new ACAP project, work through the set in this order:
+
+1. **Gate 0 — [suitability](./standards/acap-project-suitability.md):** is this even a good fit for a custom ACAP? Resolve any STOP/CAUTION first.
+2. **Kickstart — [go-to prompt](./standards/acap-project-go-to-prompt.md):** start an agentic session with the right research-first, test-on-device workflow.
+3. **Build — [development standards](./standards/acap-development-standards.md):** follow the conventions; reach for the [Guides](#guides) when you hit a specific API or build issue.
+4. **Validate — [security audit](./standards/acap-security-audit.md):** run the checklists before you publish.
+
+The **Standards** are normative (what to do, in order); the **Guides** are descriptive platform knowledge (how a specific thing actually behaves). Each guide ends with a **References** section citing official Axis sources, and flags any claim that is empirical/observed rather than documented.
+
 ## Standards
 
 Documents that govern how ACAPs are scoped, built, and validated. Use them in order.
@@ -45,6 +58,10 @@ General-purpose reference material for ACAP development. Written for a wide audi
 
 - **[Axis ACAP Native SDK examples](https://github.com/AxisCommunications/acap-native-sdk-examples)** — the official example repository (referenced throughout these guides).
 - **[Axis ACAP documentation](https://developer.axis.com/acap/)** and **[VAPIX library](https://developer.axis.com/vapix/)** — primary sources. When a guide here and the official docs disagree, the docs win.
+
+## Contributing
+
+Corrections and well-sourced additions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). The short version: cite official Axis sources, flag empirical/observed claims as such, and keep secrets and environment specifics out.
 
 ## License
 

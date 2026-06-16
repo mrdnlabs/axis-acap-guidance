@@ -68,13 +68,12 @@ Axis documents **`127.0.0.12`** as *the* virtual host for the service-account cr
 
 - **Do not use the device's external LAN IP** for local VAPIX calls. The ACAP will break on any device with a different IP.
 - **Re-fetch credentials on each startup.** The D-Bus credentials are transient and should not be persisted.
-- **The D-Bus API version has changed across AXIS OS releases.** The `(s)` parameter format (passing a username string) was introduced in AXIS OS 11.8. Check the official VAPIX SDK example for the current signature.
+- **The D-Bus API version has changed across AXIS OS releases.** Per the official `vapix` example README, *"the format of the D-Bus API to get VAPIX credentials changed in 11.8."* The current signature passes a username string — `g_variant_new("(s)", username)`. Check the official VAPIX SDK example for the signature on your target firmware.
 - **These credentials are valid only for loopback.** They cannot be used to authenticate against a remote device.
 
 ---
 
-## Reference
+## References
 
-- Official SDK example: [`acap-native-sdk-examples/vapix`](https://github.com/AxisCommunications/acap-native-sdk-examples/tree/main/vapix)
-- Official docs: [VAPIX access for ACAP applications](https://developer.axis.com/acap/develop/VAPIX-access-for-ACAP-applications/)
-- The VAPIX example README notes: *"The credentials should be re-fetched each time the ACAP application starts and should only be kept in memory by the ACAP application, not stored in any file."*
+- [VAPIX access for ACAP applications](https://developer.axis.com/acap/develop/VAPIX-access-for-ACAP-applications/) — the canonical source. Documents the `com.axis.HTTPConf1.VAPIXServiceAccounts1.GetCredentials` D-Bus method, the `resources.dbus.requiredMethods` manifest declaration, the `(s)` username signature, and states verbatim that the credentials *"are only valid on the local virtual host (127.0.0.12)"* and must be *"re-fetched each time the ACAP application starts … only be kept in memory … not stored in any file."* Also notes `127.0.0.12` must be on the device's "No proxy" list.
+- [Official SDK example: `acap-native-sdk-examples/vapix`](https://github.com/AxisCommunications/acap-native-sdk-examples/tree/main/vapix) — working reference implementation; its README states the D-Bus credential format *"changed in 11.8."*

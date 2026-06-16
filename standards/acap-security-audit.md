@@ -34,7 +34,7 @@
 
 - [ ] `manifest.json` uses `reverseProxy` or `httpConfig` (FastCGI) for all web endpoints
 - [ ] Every proxy/CGI entry has `"access"` set to the most restrictive level needed
-- [ ] No `"anonymous"` access unless explicitly justified and documented
+- [ ] No `"anonymous"` access unless explicitly justified and documented (and note: `anonymous` is valid only on `reverseProxy` entries, not on `httpConfig`/FastCGI)
 - [ ] Internal HTTP server binds to `localhost` only (or access is acceptable if proxy fails)
 - [ ] No unnecessary ports are opened
 - [ ] Web UI JavaScript uses `/local/<appName>/<apiPath>/` paths, not direct `http://host:port/`
@@ -216,3 +216,14 @@ To run all audits as a single agentic prompt:
 > - Recommended fix for each issue
 >
 > End with an overall go/no-go assessment.
+
+---
+
+## References
+
+The audit rules above map to these official sources:
+
+- [Manifest schema v2.0.0 — field descriptions](https://developer.axis.com/acap/reference/manifest-schemas/manifest-v2/schema-field-descriptions-v2.0.0/) — `reverseProxy` / `httpConfig` `access` levels (Audit 1; `anonymous` is `reverseProxy`-only).
+- [VAPIX access for ACAP applications](https://developer.axis.com/acap/develop/VAPIX-access-for-ACAP-applications/) — D-Bus `GetCredentials` + `127.0.0.12` for local VAPIX (Audit 2).
+- [ACAP 12.7 release notes](https://developer.axis.com/acap/release-notes/12.7/) — `password` / `writeonly` parameter masking in the audit log (Audit 2).
+- [AXIS OS Hardening Guide](https://help.axis.com/en-us/axis-os-hardening-guide) — device security baseline (general).

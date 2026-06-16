@@ -196,4 +196,15 @@ Only 2 official examples exist:
 1. **[`acap-native-sdk-examples/web-server/reverse-proxy-using-fixed-port`](https://github.com/AxisCommunications/acap-native-sdk-examples/tree/main/web-server/reverse-proxy-using-fixed-port)** — C + CivetWeb, single proxy entry, catch-all `"/"` handler (this example was previously named just `web-server`)
 2. **[`acap-rs/apps/reverse_proxy`](https://github.com/AxisCommunications/acap-rs/tree/main/apps/reverse_proxy)** — Rust, 4 proxy entries with different access levels, also uses `httpConfig`
 
-Both use `runMode: "never"` and port 2001, but these are not requirements.
+Both use `runMode: "never"` and port 2001, but these are not requirements. (Note: the upstream `reverse-proxy-using-fixed-port` manifest has since moved to `schemaVersion 2.0.0` with no `embeddedSdkVersion` — the `1.9.0` sample above is still valid for SDK 12.8–12.9.)
+
+---
+
+## References
+
+- [Web server via reverse proxy](https://developer.axis.com/acap/develop/web-server-via-reverse-proxy/) — official overview: the app's API is exposed through the AXIS OS Apache server, which routes internally to a small web server in the app, inheriting Apache authentication and TLS.
+- [Manifest schema — field descriptions](https://developer.axis.com/acap/reference/manifest-schemas/manifest-v1/schema-field-descriptions-v1.10.0/) — `reverseProxy` objects and the `apiPath` / `target` / `access` fields; `httpConfig` ("list of web server configuration objects"), which is distinct from `reverseProxy`.
+- [Example: `web-server/reverse-proxy-using-fixed-port`](https://github.com/AxisCommunications/acap-native-sdk-examples/tree/main/web-server/reverse-proxy-using-fixed-port) — C + CivetWeb; registers handlers on the full `/local/<appName>/<apiPath>` path (the source is the practical proof that Apache forwards the full URI).
+- [Example: `acap-rs/apps/reverse_proxy`](https://github.com/AxisCommunications/acap-rs/tree/main/apps/reverse_proxy) — Rust; four `reverseProxy` entries demonstrating `admin`/`operator`/`viewer`/`anonymous`, plus an `httpConfig` entry.
+
+> **Empirical / observed (no official source):** the headline "Apache forwards the full URI unchanged" is verifiable from the example's source (it registers a `"/"` catch-all), not from Axis prose; likewise the WSL-777-breaks-the-proxy behavior, `acap-build` merging manifest fields from a stale `.eap`, the CivetWeb-vs-Apache 404 content-type heuristic, and the `HTTPCGIPATHS` `package.conf` variable name are field notes, not documented contracts.
