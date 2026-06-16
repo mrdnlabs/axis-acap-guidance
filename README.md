@@ -31,6 +31,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 | Guide | Contents |
 |-------|----------|
 | [vapix-local-auth-from-acap.md](./guides/vapix-local-auth-from-acap.md) | D-Bus `GetCredentials` pattern for local VAPIX calls from an ACAP — the `127.0.0.12` virtual host, credential lifecycle, common pitfalls |
+| [axis-http-authentication-policy.md](./guides/axis-http-authentication-policy.md) | Basic vs Digest auth: the `Network.HTTP.AuthenticationPolicy` setting, why forcing Digest can 401 over HTTPS, negotiate-don't-force, and the TLS trust boundary |
 | [vapix-audio-device-control.md](./guides/vapix-audio-device-control.md) | Mute/unmute audio outputs via `audiodevicecontrol.cgi` — nested channel path gotcha, topology discovery pattern |
 | [dynamic-overlay-api.md](./guides/dynamic-overlay-api.md) | Dynamic text overlay API: `dynamicoverlay.cgi`, slot mapping `#D1`–`#D16`, when to use dynamic text vs. axoverlay |
 | [aoa-api-patterns.md](./guides/aoa-api-patterns.md) | AXIS Object Analytics API: scenario discovery, countable types, count retrieval, field naming by transport, polling vs. events |
