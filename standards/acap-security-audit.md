@@ -194,6 +194,12 @@
 - [ ] No unbounded memory growth (e.g., growing lists without limits)
 - [ ] Poll intervals are bounded and configurable
 - [ ] D-Bus and GLib resources cleaned up on exit
+- [ ] Time-since-event math uses `clock_gettime(CLOCK_MONOTONIC)`, not `time(NULL)` — TTLs, cooldowns, rate limits, and drain deadlines should be immune to NTP steps. Wall-clock `time_t` is fine for user-facing timestamps (history events, audit log) only.
+- [ ] Detached worker threads (libcurl callbacks, MQTT dispatch, alarm dispatch) are tracked and drained with a bounded wait BEFORE the modules they depend on (`config`, `token_manager`, `curl_global_cleanup`) are torn down. Zero drain = observable UAF on SIGTERM during work.
+- [ ] Cleanup chain is protected by `alarm(5)` + `SIGALRM → _exit(0)` so a stuck D-Bus call inside `ax_event_handler_free` / `ax_parameter_free` cannot cause `systemd` to `SIGKILL` mid-cleanup.
+- [ ] `signal(SIGPIPE, SIG_IGN)` at top of `main` if any subsystem uses libcurl or writes to a network socket.
+
+See [`acap-lifecycle-and-cleanup.md`](../guides/acap-lifecycle-and-cleanup.md) for the full pattern.
 
 ---
 
