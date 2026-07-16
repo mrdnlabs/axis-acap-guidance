@@ -26,7 +26,7 @@ Documents that govern how ACAPs are scoped, built, and validated. Use them in or
 | 1 | [acap-project-suitability.md](./standards/acap-project-suitability.md) | **Gate 0.** Decide whether the proposed project is appropriate to build as a custom ACAP. Do this first. |
 | 2 | [acap-project-go-to-prompt.md](./standards/acap-project-go-to-prompt.md) | **Kickstart.** Reusable prompt to begin an agentic development session with the right workflow. |
 | 3 | [acap-development-standards.md](./standards/acap-development-standards.md) | **Build.** Technical standards: project structure, SDK preferences, manifest conventions, security requirements. |
-| 4 | [acap-security-audit.md](./standards/acap-security-audit.md) | **Validate.** Six audit prompts and checklists to review code for security, packaging, and publish readiness. |
+| 4 | [acap-security-audit.md](./standards/acap-security-audit.md) | **Validate.** Seven audit prompts and checklists — network, credentials, input validation, build/packaging, publish readiness, memory/resource safety, and concurrency — plus a "common false positives" list for repeat and agentic reviews. |
 
 ## Guides
 
