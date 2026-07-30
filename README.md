@@ -48,6 +48,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 | [axis-http-authentication-policy.md](./guides/axis-http-authentication-policy.md) | Basic vs Digest auth: the `Network.HTTP.AuthenticationPolicy` setting, why forcing Digest can 401 over HTTPS, negotiate-don't-force, and the TLS trust boundary |
 | [vapix-audio-device-control.md](./guides/vapix-audio-device-control.md) | Mute/unmute audio outputs via `audiodevicecontrol.cgi` — nested channel path gotcha, topology discovery pattern |
 | [dynamic-overlay-api.md](./guides/dynamic-overlay-api.md) | Dynamic text overlay API: `dynamicoverlay.cgi`, slot mapping `#D1`–`#D16`, when to use dynamic text vs. axoverlay |
+| [consuming-scene-metadata.md](./guides/consuming-scene-metadata.md) | Reading per-object detections on-device via Device Data Hub `com.axis.scene.frame.v1`: why not the removed Message Broker, payload shape and coordinate frame, `Head`/`LicensePlate` arriving as separate tracks, 85% of detections unclassified, track ids reused across 40–50 s absences, and why the event-paced stream breaks naive clock-step detection |
 | [aoa-api-patterns.md](./guides/aoa-api-patterns.md) | AXIS Object Analytics API: scenario discovery, countable types, count retrieval, field naming by transport, polling vs. events |
 
 ### Device-Specific Hardware
