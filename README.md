@@ -44,6 +44,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 ### VAPIX and Device APIs
 | Guide | Contents |
 |-------|----------|
+| [axparameter-callback-deadlock.md](./guides/axparameter-callback-deadlock.md) | Why reading a parameter inside an `ax_parameter_register_callback()` handler deadlocks the app *and* the `param.cgi` request that triggered it — with no log output — and the idle-defer fix; plus why a mutex must not be held across `ax_parameter_get()` |
 | [vapix-local-auth-from-acap.md](./guides/vapix-local-auth-from-acap.md) | D-Bus `GetCredentials` pattern for local VAPIX calls from an ACAP — the `127.0.0.12` virtual host, credential lifecycle, common pitfalls |
 | [axis-http-authentication-policy.md](./guides/axis-http-authentication-policy.md) | Basic vs Digest auth: the `Network.HTTP.AuthenticationPolicy` setting, why forcing Digest can 401 over HTTPS, negotiate-don't-force, and the TLS trust boundary |
 | [vapix-audio-device-control.md](./guides/vapix-audio-device-control.md) | Mute/unmute audio outputs via `audiodevicecontrol.cgi` — nested channel path gotcha, topology discovery pattern |
