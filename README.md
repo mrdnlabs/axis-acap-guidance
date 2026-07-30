@@ -35,6 +35,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 ### Build and Configuration
 | Guide | Contents |
 |-------|----------|
+| [sdk-firmware-version-matching.md](./guides/sdk-firmware-version-matching.md) | Choosing an SDK for your target AXIS OS: the SDK↔OS mapping, per-SDK minimum firmware, why official examples pin the newest SDK and will not compile a release behind, a worked case of the Device Data Hub C API changing shape between 12.10 and 12.11, and how to read the headers out of the SDK image |
 | [acap-manifest-gotchas.md](./guides/acap-manifest-gotchas.md) | Manifest pitfalls: schema/SDK version coupling, `settingPage` spelling, parameter group capitalization, `embeddedSdkVersion` semantics, credential param types, restart behavior |
 | [acap-reverse-proxy-guide.md](./guides/acap-reverse-proxy-guide.md) | Complete reverse proxy guide: Apache forwards the full URI unchanged, manifest config, multiple access levels, debugging checklist |
 | [acap-wsl-build-pitfalls.md](./guides/acap-wsl-build-pitfalls.md) | WSL2 build issues: 777 file permissions silently break the proxy, Docker BuildKit stale caches, CRLF line endings, Dockerfile template |
