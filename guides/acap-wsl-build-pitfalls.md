@@ -1,6 +1,8 @@
-# ACAP Build Pitfalls on WSL2
+# ACAP Build Pitfalls on Windows (WSL2 and Git Bash)
 
-Issues specific to building ACAPs with Docker on WSL2 with source files on the Windows filesystem (`/mnt/c/`).
+Issues specific to building ACAPs with Docker on Windows. §1–3 and §5 are about **WSL2** with source
+files on the Windows filesystem (`/mnt/c/`). §4 is about **Git Bash / MSYS**, a different environment
+with a different failure.
 
 ---
 
@@ -91,7 +93,46 @@ sed -i 's/\r$//' build.sh
 
 ---
 
-## 4. Recommended Dockerfile Template for WSL
+## 4. Not WSL: Git Bash / MSYS rewrites container paths
+
+If you build on Windows from **Git Bash** (MSYS2) rather than WSL2, a different problem appears.
+MSYS path conversion rewrites anything that looks like a Unix path in a command argument into a
+Windows path — including paths that were meant for the *container*, not the host.
+
+```bash
+docker run --rm --entrypoint /bin/bash <image> -c "ls /opt/axis"
+```
+
+fails with:
+
+```
+exec: "C:/Program Files/Git/usr/bin/bash": stat C:/Program Files/Git/usr/bin/bash:
+no such file or directory
+```
+
+`/bin/bash` was rewritten to a host path before Docker ever saw it. The same applies to `-v`
+destinations, `--entrypoint`, and any absolute path in the command you pass.
+
+### Fix
+
+Disable path conversion for the call:
+
+```bash
+MSYS_NO_PATHCONV=1 docker run --rm --entrypoint /bin/bash <image> -c "ls /opt/axis"
+```
+
+Export it once per script if you make several such calls, or run Docker from PowerShell instead,
+where the problem does not exist.
+
+This bites hardest when inspecting an SDK image — reading headers, listing `pkg-config` packages,
+listing manifest schemas — which is exactly when you are already unsure whether the problem is your
+code or your toolchain. See
+[sdk-firmware-version-matching.md](./sdk-firmware-version-matching.md) for those inspection
+one-liners.
+
+---
+
+## 5. Recommended Dockerfile Template for WSL
 
 ```dockerfile
 ARG ARCH=armv7hf
@@ -123,8 +164,9 @@ docs
 
 ## References
 
-The pitfalls in this guide are **empirical** — observed when building with Docker on WSL2 against the Windows filesystem (`/mnt/c/`). They are not Axis-documented behavior; the underlying tooling is, though:
+The pitfalls in this guide are **empirical** — observed when building with Docker on Windows: §1–3 and §5 on WSL2 against the Windows filesystem (`/mnt/c/`), and §4 on Git Bash (MSYS2) while building for an AXIS Q3538-SLVE on AXIS OS 12.11.77. They are not Axis-documented behavior; the underlying tooling is, though:
 
 - [Build, install and run an ACAP application](https://developer.axis.com/acap/develop/build-install-run/) — the official `acap-build` / Docker build flow these notes work around.
 - [`axisecp/acap-native-sdk` on Docker Hub](https://hub.docker.com/r/axisecp/acap-native-sdk) — the SDK images referenced in the `FROM` line.
 - WSL filesystem behavior is general (not Axis-specific): see Microsoft's [WSL file-permissions docs](https://learn.microsoft.com/en-us/windows/wsl/file-permissions) for why `/mnt/c/` files report `777`.
+- MSYS path conversion is likewise general: see the [MSYS2 filesystem-paths documentation](https://www.msys2.org/docs/filesystem-paths/) for the rewriting rules and `MSYS_NO_PATHCONV`.
