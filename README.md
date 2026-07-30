@@ -44,6 +44,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 ### VAPIX and Device APIs
 | Guide | Contents |
 |-------|----------|
+| [mqtt-event-bridge.md](./guides/mqtt-event-bridge.md) | Publishing device and ACAP events over the built-in MQTT client: the observed topic format (ONVIF source keys become `$source/<key>/<value>` path segments, so subscribers get per-instance topics), payloads with every value stringified and an epoch-ms timestamp, and why `configureEventPublication` needs read-merge-write or it deletes the operator's filters |
 | [vapix-local-auth-from-acap.md](./guides/vapix-local-auth-from-acap.md) | D-Bus `GetCredentials` pattern for local VAPIX calls from an ACAP — the `127.0.0.12` virtual host, credential lifecycle, common pitfalls |
 | [axis-http-authentication-policy.md](./guides/axis-http-authentication-policy.md) | Basic vs Digest auth: the `Network.HTTP.AuthenticationPolicy` setting, why forcing Digest can 401 over HTTPS, negotiate-don't-force, and the TLS trust boundary |
 | [vapix-audio-device-control.md](./guides/vapix-audio-device-control.md) | Mute/unmute audio outputs via `audiodevicecontrol.cgi` — nested channel path gotcha, topology discovery pattern |
