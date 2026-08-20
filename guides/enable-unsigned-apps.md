@@ -1,5 +1,7 @@
 # Enabling unsigned ACAP apps programmatically
 
+> This is the **unsigned** path — a toggle Axis plans to remove around AXIS OS 13. For the durable path (getting your `.eap` signed, including the non-TIP route), see [acap-application-signing.md](./acap-application-signing.md).
+
 From AXIS OS 12.0, signing of ACAP applications is required by default (unsigned apps are disabled), but it can be toggled off over VAPIX with the ACAP application configuration CGI. The XML replies shown below are representative of the documented `<reply result="ok">…</reply>` shape — confirm the exact body on your firmware.
 
 ## Read current setting
