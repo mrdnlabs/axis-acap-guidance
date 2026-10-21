@@ -92,6 +92,8 @@ The same reset also re-arms `AllowUnsigned=false` — see
 - Treat available RAM as a **per-SKU** fact to look up, not a per-SoC assumption.
 - On a constrained device, decide early whether the bundled analytics are part of the product; if
   they are, budget the model accordingly.
+- For the model format and quantization each chip expects (int8/uint8 `.tflite` on ARTPEC, Edge
+  TPU-compiled on ARTPEC-7 and per-tensor on ARTPEC-8; CNNGen `.bin` on CV25/CV75), see [dlpu-model-conversion.md](./dlpu-model-conversion.md).
 
 ---
 
