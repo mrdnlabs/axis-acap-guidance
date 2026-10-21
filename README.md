@@ -35,7 +35,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 ### Build and Configuration
 | Guide | Contents |
 |-------|----------|
-| [acap-manifest-gotchas.md](./guides/acap-manifest-gotchas.md) | Manifest pitfalls: schema/SDK version coupling, `settingPage` spelling, parameter group capitalization, `embeddedSdkVersion` semantics, credential param types, restart behavior |
+| [acap-manifest-gotchas.md](./guides/acap-manifest-gotchas.md) | Manifest pitfalls: schema/SDK version coupling, the missing **Open** button (`settingPage`), schema 2.x required `setup` fields and `compatibleOsVersions` now gating installation, renamed `resources` keys, parameter group capitalization, `embeddedSdkVersion` semantics, credential param types, restart behavior |
 | [acap-reverse-proxy-guide.md](./guides/acap-reverse-proxy-guide.md) | Complete reverse proxy guide: Apache forwards the full URI unchanged, manifest config, multiple access levels, debugging checklist |
 | [acap-wsl-build-pitfalls.md](./guides/acap-wsl-build-pitfalls.md) | WSL2 build issues: 777 file permissions silently break the proxy, Docker BuildKit stale caches, CRLF line endings, Dockerfile template |
 | [acap-application-signing.md](./guides/acap-application-signing.md) | Signing an `.eap`: TIP vs non-TIP routes (the ACAP Signing Service), the mandatory schema-v2.x upgrade, and what `acap-build` rewrites in your manifest |
