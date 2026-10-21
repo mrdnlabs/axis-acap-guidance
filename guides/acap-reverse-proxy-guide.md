@@ -171,6 +171,138 @@ Use multiple entries pointing to the same target with different paths and access
 
 ---
 
+## Register handlers ONLY at the proxy-prefixed path
+
+The examples in the previous section show handlers registered at both the direct-access path (`"/status"`) and the proxy-prefixed path (`"/local/myapp/api/status"`). That's convenient during development on the loopback port. It's also a defense-in-depth hole in production.
+
+CivetWeb binds `127.0.0.1:8080`, which is reachable from any other process on the device — including any co-installed ACAP running as a different SDK user. A route registered at `/status` and reachable via `http://127.0.0.1:8080/status` bypasses Apache entirely, along with the manifest's role split (admin/operator/viewer). The full attack chain is: co-installed compromised ACAP → loopback → your app's `/clear-history` (or worse, your `/test-alarm-action`) with no auth, no CSRF gate, no audit.
+
+**Fix: register handlers only at the proxy path.** Delete the direct-access registrations before shipping.
+
+```c
+/* Not this, in production: */
+mg_set_request_handler(ctx, "/status", handler_status, NULL);
+mg_set_request_handler(ctx, PROXY_PFX "/status", handler_status, NULL);
+
+/* This: */
+mg_set_request_handler(ctx, PROXY_PFX "/status", handler_status, NULL);
+```
+
+For development / local testing, keep both behind an `#ifdef DEBUG_DIRECT_ROUTES`, not always-on.
+
+---
+
+## Method + Content-Type + CSRF gate for mutating handlers
+
+The Axis reverse proxy authenticates the request. It does NOT check the HTTP method or `Content-Type`, or apply CSRF protection. If your handlers accept any method with any body shape, `GET /local/myapp/admin/threshold-crossing` from a stray `<img>` tag on any page the operator has open — with the operator's admin cookie attached by the browser — will fire whatever action the handler dispatches.
+
+Three cheap layers close it, defense-in-depth:
+
+```c
+/* Enforce method + body shape for mutating handlers and reject
+ * simple-form CSRF.  On failure, sends a 4xx and returns false. */
+static bool require_mutating_request(struct mg_connection *conn,
+                                     bool require_xrw)
+{
+    const struct mg_request_info *ri = mg_get_request_info(conn);
+    if (!ri) { send_error(conn, 400, "Bad request"); return false; }
+
+    if (strcmp(ri->request_method, "POST") != 0) {
+        send_error(conn, 405, "Method not allowed; POST required");
+        return false;
+    }
+    const char *ct = mg_get_header(conn, "Content-Type");
+    if (!ct || strncasecmp(ct, "application/json", 16) != 0) {
+        send_error(conn, 415,
+                   "Unsupported Media Type; application/json required");
+        return false;
+    }
+    if (require_xrw) {
+        const char *xrw = mg_get_header(conn, "X-Requested-With");
+        if (!xrw || strcmp(xrw, "myapp") != 0) {
+            send_error(conn, 403,
+                       "Missing or invalid X-Requested-With header");
+            return false;
+        }
+    }
+    return true;
+}
+```
+
+Why each layer:
+- **POST-only.** Kills `<img src>`, `<link>`, `<script src>` CSRF entirely.
+- **`Content-Type: application/json`.** A cross-origin HTML form can only set `Content-Type` to `application/x-www-form-urlencoded`, `multipart/form-data`, or `text/plain`. Requiring `application/json` blocks the form-post CSRF class.
+- **`X-Requested-With` custom header.** A cross-origin `fetch` cannot set a custom header without a CORS preflight, and the preflight will fail because the ACAP does not respond to `OPTIONS` with `Access-Control-Allow-Headers: X-Requested-With`. This is the belt-and-suspenders check.
+
+`require_xrw` is `true` for admin endpoints (browser-only). Leave it `false` for `/ingest/*`-style endpoints that server-side callers (a VMS, an ACS integration) POST to — they typically won't send custom headers.
+
+Your frontend's fetch helper must send both:
+
+```js
+async function apiFetch(path, opts = {}) {
+  const headers = {
+    'Content-Type':     'application/json',
+    'X-Requested-With': 'myapp',
+    ...(opts.headers || {}),
+  };
+  const resp = await fetch(API_BASE + path, {
+    credentials: 'same-origin', ...opts, headers,
+  });
+  ...
+}
+```
+
+---
+
+## Security response headers
+
+Set these on every JSON response. Nothing in the reverse proxy defaults will do it for you:
+
+```c
+mg_printf(conn,
+    "HTTP/1.1 %d %s\r\n"
+    "Content-Type: application/json\r\n"
+    "Content-Length: %d\r\n"
+    "Cache-Control: no-store, no-cache, must-revalidate, private\r\n"
+    "Pragma: no-cache\r\n"
+    "X-Content-Type-Options: nosniff\r\n"
+    "X-Frame-Options: DENY\r\n"
+    "Connection: close\r\n"
+    "\r\n",
+    status, reason(status), (int)len);
+```
+
+- `Cache-Control: no-store, ...` keeps `/admin/config` (host/port/user/url fields) and `/admin/status` (badge IDs, event history) out of the browser cache.
+- `X-Content-Type-Options: nosniff` blocks MIME sniffing.
+- `X-Frame-Options: DENY` prevents embedding under an `<iframe>` on another origin. Apache's default sets `SAMEORIGIN` for the HTML page; setting `DENY` on the JSON is stricter.
+
+For the HTML settings page itself, add a meta CSP or serve it from Apache. Inline `onclick` handlers won't work under a strict CSP; use `addEventListener` from the start.
+
+---
+
+## `read_body` should distinguish empty / missing / oversized
+
+The naïve pattern reads `ri->content_length`, `malloc`s that many bytes, and returns `NULL` on any error. `NULL` conflates "no body sent" with "body too large" with "read error" with "chunked encoding you don't handle". The client sees a generic 400 and can't tell what's wrong.
+
+Return an enum from a wrapper:
+
+```c
+typedef enum {
+    BODY_OK,           /* out/out_len valid, caller frees out */
+    BODY_NONE,         /* content_length was 0 */
+    BODY_TOO_LARGE,    /* exceeded your cap (typically 64 KB) */
+    BODY_READ_ERROR,   /* short read or IO error */
+    BODY_UNSUPPORTED,  /* Transfer-Encoding: chunked; unsupported */
+} BodyResult;
+
+BodyResult read_body(struct mg_connection *conn,
+                     char **out, size_t *out_len);
+```
+
+Then handlers return 413 for `BODY_TOO_LARGE`, 415 for `BODY_UNSUPPORTED`, and a specific 400 message for `BODY_READ_ERROR`. `/ingest/*` endpoints that accept an empty POST (a "trigger" pattern) map `BODY_NONE` to success with defaults instead of failure.
+
+---
+
 ## HTTPCGIPATHS in package.conf
 
 `HTTPCGIPATHS` is a `package.conf` variable from the pre-manifest era; it maps to the `httpConfig` (FastCGI/CGI) mechanism, **NOT** `reverseProxy`. It is expected to be empty when using `reverseProxy`. The device reads `manifest.json` directly for proxy configuration.

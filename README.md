@@ -36,7 +36,9 @@ General-purpose reference material for ACAP development. Written for a wide audi
 | Guide | Contents |
 |-------|----------|
 | [acap-manifest-gotchas.md](./guides/acap-manifest-gotchas.md) | Manifest pitfalls: schema/SDK version coupling, `settingPage` spelling, parameter group capitalization, `embeddedSdkVersion` semantics, credential param types, restart behavior |
-| [acap-reverse-proxy-guide.md](./guides/acap-reverse-proxy-guide.md) | Complete reverse proxy guide: Apache forwards the full URI unchanged, manifest config, multiple access levels, debugging checklist |
+| [acap-reverse-proxy-guide.md](./guides/acap-reverse-proxy-guide.md) | Complete reverse proxy guide: Apache forwards the full URI unchanged, manifest config, multiple access levels, register handlers only at proxy paths, CSRF gate + Content-Type + method checks, security response headers, `read_body` enum, debugging checklist |
+| [acap-lifecycle-and-cleanup.md](./guides/acap-lifecycle-and-cleanup.md) | Startup/shutdown pattern that survives detached workers, D-Bus stalls, and resubscribe races: cleanup ordering, worker drain, SIGALRM watchdog, atomic fallback-config writes |
+| [libcurl-in-acap-checklist.md](./guides/libcurl-in-acap-checklist.md) | Hardening every outbound libcurl call: `CURLOPT_NOSIGNAL`, `SIGPIPE`, scheme allowlist, `MAXREDIRS`, `UNRESTRICTED_AUTH=0`, https-by-default with opt-out, URL log sanitization, credential-buffer zeroing |
 | [acap-wsl-build-pitfalls.md](./guides/acap-wsl-build-pitfalls.md) | WSL2 build issues: 777 file permissions silently break the proxy, Docker BuildKit stale caches, CRLF line endings, Dockerfile template |
 | [acap-application-signing.md](./guides/acap-application-signing.md) | Signing an `.eap`: TIP vs non-TIP routes (the ACAP Signing Service), the mandatory schema-v2.x upgrade, and what `acap-build` rewrites in your manifest |
 | [enable-unsigned-apps.md](./guides/enable-unsigned-apps.md) | Enabling unsigned ACAP installation via VAPIX `config.cgi`; why `upload.cgi` answers `Error:2`, and how a factory reset re-arms the toggle |
