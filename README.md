@@ -41,6 +41,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 | [acap-application-signing.md](./guides/acap-application-signing.md) | Signing an `.eap`: TIP vs non-TIP routes (the ACAP Signing Service), the mandatory schema-v2.x upgrade, and what `acap-build` rewrites in your manifest |
 | [enable-unsigned-apps.md](./guides/enable-unsigned-apps.md) | Enabling unsigned ACAP installation via VAPIX `config.cgi`; why `upload.cgi` answers `Error:2`, and how a factory reset re-arms the toggle |
 | [dlpu-memory-contention.md](./guides/dlpu-memory-contention.md) | When a bundled analytic (e.g. Object Analytics) and your model exhaust a device's RAM: the deceptive `Status="Running"` + "model failed to load" signature, the `custodio: would have triggered OOM` smoking gun, and the factory-reset trap |
+| [dlpu-model-conversion.md](./guides/dlpu-model-conversion.md) | Getting a trained model (e.g. PyTorch) onto a DLPU: full-integer int8/uint8 `.tflite` for ARTPEC-7/8/9 (per-tensor on ARTPEC-8, which Axis's how-to scripts don't default to), Ambarella CNNGen `.bin` for CV25/CV75, no documented FP16 path, Larod device names, operator limits, one `.eap` per chip |
 
 ### VAPIX and Device APIs
 | Guide | Contents |

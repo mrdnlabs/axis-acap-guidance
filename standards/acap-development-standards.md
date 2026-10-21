@@ -161,6 +161,8 @@ This is the only option Axis documents (`ax_parameter.h`, present since the ACAP
 
 When the SDK provides a capability, use it. It handles firmware version differences, device quirks, and security boundaries that custom code will not.
 
+For custom models, the accelerators take chip-specific quantized model files run through Larod — see the [DLPU model conversion guide](../guides/dlpu-model-conversion.md) for the format and quantization each chip expects.
+
 ---
 
 ## 6. Project Structure
