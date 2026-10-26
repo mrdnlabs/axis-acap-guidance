@@ -169,6 +169,45 @@ Use multiple entries pointing to the same target with different paths and access
 ]
 ```
 
+### Access-level bypass via path normalization (verify this)
+
+When you split access levels by `apiPath` like the above, there is a
+separator-confusion escalation to check for. **Apache authorizes on the raw
+request path, but your embedded server dispatches on a *cleaned* path.** If
+the two disagree, an `operator` (or `viewer`) caller can reach an `admin`
+handler.
+
+CivetWeb, for example, URL-decodes the path, converts `\` to `/`, and
+resolves `..` segments *before* matching a handler. So with operator
+credentials:
+
+```
+POST /local/myapp/api/viewer/..%5Capi%2Fadmin%2Fdangerous
+```
+
+Apache sees `.../api/viewer/...`, applies the **viewer** policy, and proxies
+it; CivetWeb cleans the path to `.../api/admin/dangerous` and runs the admin
+handler. Authentication passed, authorization was for the wrong level.
+
+**Fix:** reject non-canonical paths at the top of request handling. With
+CivetWeb, compare the raw and cleaned URIs and refuse a backslash outright:
+
+```c
+const struct mg_request_info *ri = mg_get_request_info(conn);
+if (strcmp(ri->local_uri_raw ? ri->local_uri_raw : "",
+           ri->local_uri     ? ri->local_uri     : "") != 0 ||
+    (ri->request_uri && strchr(ri->request_uri, '\\'))) {
+    /* 400 and stop: the decoded path changed shape under normalization */
+    mg_send_http_error(conn, 400, "Bad request path");
+    return 1;
+}
+```
+
+Verify on a device with an operator account: a request like the one above
+must return `400`/`404`, not the admin handler's response. (`local_uri_raw`
+is the decoded-but-uncleaned path; `local_uri` is the cleaned one — see
+`civetweb.h`.)
+
 ---
 
 ## HTTPCGIPATHS in package.conf

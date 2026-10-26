@@ -51,6 +51,7 @@ General-purpose reference material for ACAP development. Written for a wide audi
 | [vapix-audio-device-control.md](./guides/vapix-audio-device-control.md) | Mute/unmute audio outputs via `audiodevicecontrol.cgi` — nested channel path gotcha, topology discovery pattern |
 | [dynamic-overlay-api.md](./guides/dynamic-overlay-api.md) | Dynamic text overlay API: `dynamicoverlay.cgi`, slot mapping `#D1`–`#D16`, when to use dynamic text vs. axoverlay |
 | [aoa-api-patterns.md](./guides/aoa-api-patterns.md) | AXIS Object Analytics API: scenario discovery, countable types, count retrieval, field naming by transport, polling vs. events |
+| [axevent-subscription-gotchas.md](./guides/axevent-subscription-gotchas.md) | Subscribing to device events safely: read the device's own declaration, filter on the real source key (digital input is `IO/Port`, 0-based `port`), baseline the stateful redelivery, keep resubscribe idempotent and on the main loop, and catch silent non-existent-source subscriptions |
 
 ### Device-Specific Hardware
 | Guide | Contents |
