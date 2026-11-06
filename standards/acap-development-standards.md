@@ -188,7 +188,7 @@ my-acap/
 
 ```dockerfile
 ARG ARCH=aarch64
-ARG VERSION=12.9.0
+ARG VERSION=12.11.1
 ARG UBUNTU_VERSION=24.04
 
 FROM axisecp/acap-native-sdk:${VERSION}-${ARCH}-ubuntu${UBUNTU_VERSION}
@@ -202,6 +202,11 @@ RUN find . -type f -exec chmod 644 {} + && \
 
 RUN . /opt/axis/acapsdk/environment-setup* && acap-build ./
 ```
+
+For **AXIS OS 13** targets the manifest must be schema v2.x and the package signed (or installed through a
+Developer Mode app). See [acap-application-signing.md](../guides/acap-application-signing.md). A DLPU app
+must also declare `resources.deepLearningProcessor`. Run the chmod step before `acap-build`, and pass any
+large assets with `-a`.
 
 ### .dockerignore
 

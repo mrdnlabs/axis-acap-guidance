@@ -80,6 +80,28 @@ To confirm the package really is signed before/after upload, the signed `.eap` c
 tar -tzf my_app_1_0_0_aarch64.eap | grep -i sig   # signed package lists a signature file
 ```
 
+## Iterating on AXIS OS 13: the signing loop (empirical)
+
+> Observed with the non-TIP Signing Service and an AXIS OS 13.1.19 camera, November 2026. On AXIS OS 13
+> a **schema-v2, signed** package (or a Developer Mode app with a matching `vendorId`) is what installs.
+> Plan for one signing per build.
+
+- **The terms are shown on every visit.** Each signing means accepting them, choosing the `.eap` and
+  pressing **SIGN ACAP**. The page then POSTs the package to the signing backend and saves the response
+  as `signed_<original name>.eap` through a script-triggered download.
+- **Chrome blocks the second download.** From the second signing on the same site, Chrome holds the
+  download behind its *download multiple files* prompt. The backend still answers 200 and nothing appears
+  in Downloads. Allow **Automatic downloads** for `www.axis.com` in Chrome's site settings, or click Allow
+  on the prompt once.
+- **The signature covers the whole package.** The signed file is the original `.eap` with a signature
+  appended, so every rebuild needs a new signature. Keep frequently changing, large assets out of
+  the package where it's safe. For example, ship a small default model and let an **admin-only**
+  endpoint upload alternative models into `localdata/`. Model swaps then don't need a re-sign. (Browser
+  automation tools may also cap a single file upload; one such tool capped it at 10 MB.) Treat an
+  uploaded model as untrusted input: validate its metadata, write it atomically, and never execute it as code.
+- **Agentic workflows:** ask the person once per session whether the agent may accept the Signing
+  Service terms on their behalf. The terms are legal text, and signing exposes their e-mail as `vendor`.
+
 ## How the signature works
 
 Axis signs with **SHA-512 + a 4096-bit RSA key** held in an HSM; devices carry the matching public key and verify the signature at install time. Signatures are honored on **AXIS OS 9.20+**; older devices ignore them. This is why the signing operation is server-side only — you never hold a private key.

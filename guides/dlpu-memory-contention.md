@@ -84,6 +84,29 @@ now can't load its model, check what else is running before you debug your own c
 The same reset also re-arms `AllowUnsigned=false` — see
 [enable-unsigned-apps.md](./enable-unsigned-apps.md).
 
+## Compiling a large model can reboot the camera (observed, AXIS OS 13.1)
+
+> **Empirical:** AXIS P3288-LVE (ARTPEC-9), AXIS OS 13.1.19, November 2026.
+
+The first load of a `.tflite` on ARTPEC-9 compiles it for the DLPU, and the compile needs far more RAM
+than the file. Loading a 27 MB int8 yolov8m-pose (960×544) with ~220 MB available didn't just fail the
+load: the **kernel** ran out of memory and **the camera rebooted**. AXIS Object Analytics, another DLPU
+app and the loading app's own small model were all resident. The system log shows
+`crashdump-detect … OOM notifier` lines, followed by a fresh boot (larod and the bundled analytics start
+again). A 12 MB yolov8s-pose compiled fine with ~370 MB available. The same 27 MB model compiled in
+172 s on a second try with the other DLPU app stopped.
+
+Guard against it in the app:
+
+- **Check `MemAvailable` (`/proc/meminfo`) before loading an uncached model**, and refuse when it is low
+  relative to the model's size. The heuristic used here was 150 MB + 10 × the model's size in MB.
+- **Leave a marker file while loading** and delete it afterwards. If the marker survives a restart, the
+  load took the device down, so don't retry that model automatically; otherwise the app reboot-loops the
+  camera.
+- **Reloads hit larod's compile cache:** 1.2–1.5 s and little memory, even after an app reinstall or a
+  reboot. Remember which model files (path + size + mtime) loaded before, and skip the memory check for
+  those.
+
 ## Practical guidance
 
 - **Gate your deploy on the app's own health endpoint, not on `Status="Running"`.** "Installed and
