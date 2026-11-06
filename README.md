@@ -4,7 +4,7 @@ Standards, reusable prompts, and hard-won learnings for developing [Axis ACAP](h
 
 This is a vendor-neutral knowledge base distilled from real ACAP projects. It is not affiliated with or endorsed by Axis Communications. Technical claims were verified against official Axis documentation, but the platform moves quickly — **always confirm against the docs and your target firmware**, especially anything tied to a specific SDK or AXIS OS version.
 
-> _Last verified: June 2026, against AXIS OS 12.x / ACAP Native SDK 12.x. See the **References** section in each document for the official sources behind its claims._
+> _Last verified: June 2026, against AXIS OS 12.x / ACAP Native SDK 12.x. Additions marked as such were checked in November 2026 against AXIS OS 13.1 / SDK 12.11.1 (ARTPEC-9). See the **References** section in each document for the official sources behind its claims._
 
 ## Start here
 
@@ -38,10 +38,11 @@ General-purpose reference material for ACAP development. Written for a wide audi
 | [acap-manifest-gotchas.md](./guides/acap-manifest-gotchas.md) | Manifest pitfalls: schema/SDK version coupling, `settingPage` spelling, parameter group capitalization, `embeddedSdkVersion` semantics, credential param types, restart behavior |
 | [acap-reverse-proxy-guide.md](./guides/acap-reverse-proxy-guide.md) | Complete reverse proxy guide: Apache forwards the full URI unchanged, manifest config, multiple access levels, debugging checklist |
 | [acap-wsl-build-pitfalls.md](./guides/acap-wsl-build-pitfalls.md) | WSL2 build issues: 777 file permissions silently break the proxy, Docker BuildKit stale caches, CRLF line endings, Dockerfile template |
-| [acap-application-signing.md](./guides/acap-application-signing.md) | Signing an `.eap`: TIP vs non-TIP routes (the ACAP Signing Service), the mandatory schema-v2.x upgrade, and what `acap-build` rewrites in your manifest |
+| [acap-application-signing.md](./guides/acap-application-signing.md) | Signing an `.eap`: TIP vs non-TIP routes (the ACAP Signing Service), the mandatory schema-v2.x upgrade, what `acap-build` rewrites in your manifest, and the per-build signing loop on AXIS OS 13 |
 | [enable-unsigned-apps.md](./guides/enable-unsigned-apps.md) | Enabling unsigned ACAP installation via VAPIX `config.cgi`; why `upload.cgi` answers `Error:2`, and how a factory reset re-arms the toggle |
 | [dlpu-memory-contention.md](./guides/dlpu-memory-contention.md) | When a bundled analytic (e.g. Object Analytics) and your model exhaust a device's RAM: the deceptive `Status="Running"` + "model failed to load" signature, the `custodio: would have triggered OOM` smoking gun, and the factory-reset trap |
-| [dlpu-model-conversion.md](./guides/dlpu-model-conversion.md) | Getting a trained model (e.g. PyTorch) onto a DLPU: full-integer int8/uint8 `.tflite` for ARTPEC-7/8/9 (per-tensor on ARTPEC-8, which Axis's how-to scripts don't default to), Ambarella CNNGen `.bin` for CV25/CV75, no documented FP16 path, Larod device names, operator limits, one `.eap` per chip |
+| [record-then-batch-on-camera.md](./guides/record-then-batch-on-camera.md) | Record while something is in the scene, then re-analyze the clip once the scene is empty: VDO Motion-JPEG recording with pre-roll, libjpeg-turbo decode, a second larod model, pause/resume, and the shared live/recording timestamps |
+| [dlpu-model-conversion.md](./guides/dlpu-model-conversion.md) | Getting a trained model (e.g. PyTorch) onto a DLPU: full-integer int8/uint8 `.tflite` for ARTPEC-7/8/9 (per-tensor on ARTPEC-8, which Axis's how-to scripts don't default to), Ambarella CNNGen `.bin` for CV25/CV75, no documented FP16 path, Larod device names, operator limits, one `.eap` per chip, and (empirical) YOLOv8/YOLOv8-pose on ARTPEC-9 with AXIS OS 13: split-head export, exact graph rewrites, on-device self-test |
 
 ### VAPIX and Device APIs
 | Guide | Contents |

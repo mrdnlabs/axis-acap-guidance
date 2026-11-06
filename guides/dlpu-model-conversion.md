@@ -156,6 +156,52 @@ both checked at Ultralytics 8.4.183), and the `litert` export exposes no per-ten
 **Inference:** that does not match the int8/uint8-I/O, per-tensor model the ARTPEC-8 pages call for,
 so treat it as unvalidated on Axis DLPUs.
 
+### YOLOv8 (detect and pose) on ARTPEC-9 with AXIS OS 13 — empirical
+
+> **Empirical, observed on one device:** AXIS P3288-LVE, ARTPEC-9, AXIS OS 13.1.19, SDK 12.11.1,
+> onnx2tf 1.29.24, TensorFlow 2.19, Ultralytics 8.3.240 (November 2026). Not an Axis-documented path.
+
+**Reported (2026):** a community project states that ARTPEC-9 *before* AXIS OS 13 computes YOLOv8 wrongly
+(the model runs at full speed but returns high-confidence garbage), while AXIS OS 13 computes it correctly
+([detectx-2tier](https://github.com/pandosme/detectx-2tier)). On AXIS OS 13.1 stock COCO yolov8n-pose and
+yolov8s-pose, **with SiLU left in**, ran entirely on `a9-dlpu-tflite`. Their keypoints matched the
+host TFLite reference within 3–5 model pixels (mean), using a bundled self-test image checked at app
+start-up. AXIS OS 12 was not re-tested.
+
+What it took:
+
+1. **Don't use Ultralytics' own TFLite export.** Wrap the model so the graph ends *before* the head's decode
+   and `Concat`. Return the raw per-level conv outputs instead (box DFL logits, class logits and, for
+   pose, keypoint x/y and keypoint visibility as separate convs). Every output then gets its own int8 scale.
+   One shared scale for boxes (0–640 px) and scores (0–1) rounds the scores to zero (see
+   [YOLOv8-on-AXIS-ACAP](https://github.com/kotyzap/YOLOv8-on-AXIS-ACAP)). Do the DFL softmax, anchors,
+   sigmoid and NMS on the CPU, and only for cells whose class logit passes the threshold. You can compare
+   that threshold in the quantized domain, so the background costs one integer compare per cell.
+2. **Run `onnxsim` before `onnx2tf`.** On the raw TorchScript ONNX export, onnx2tf 1.29.24 failed in a C2f
+   residual `Add` with `Dimensions must be equal, but are 32 and 16`; with static shapes it converts.
+3. **Three exact graph rewrites made yolov8s-pose (960×544) 2.4× faster** (125 → 53 ms per inference on
+   the DLPU), with the same accuracy against the float model:
+   - C2f `chunk(2)` → two 1×1 convs with the halves of `cv1`'s weights. This removes all `STRIDED_SLICE`
+     ops (not in the ARTPEC-9 supported-ops list).
+   - An identity 1×1 conv after each residual bottleneck. Without it onnx2tf does the `Add` → `Concat` in
+     NCHW and wraps it in `TRANSPOSE` ops: 18 in yolov8n, 0 afterwards. This is the same fix as for YOLOX
+     CSP blocks.
+   - SPPF max-pools on a concat-padded input instead of padded pools, padded with SiLU's minimum
+     (−0.2785). That is exactly equivalent to `-inf` padding after SiLU, and it avoids the stride-1
+     padded MaxPool border errors seen on the A9 DLPU on AXIS OS 12.11.
+   After these, the graph holds only `CONV_2D`, `LOGISTIC`, `MUL`, `ADD`, `CONCATENATION`, `MAX_POOL_2D`,
+   `RESIZE_NEAREST_NEIGHBOR`, `PAD` (stride-2 convs) and `QUANTIZE`.
+4. **Measured speeds and compile times** (per-channel int8, uint8 input, int8 outputs):
+
+   | Model | Input | DLPU inference | First load (compile) |
+   |---|---|---|---|
+   | yolov8n-pose, original graph | 640×384 | 29–47 ms | 61 s |
+   | yolov8s-pose, original graph | 960×544 | 125 ms (172 ms right after load) | 85 s |
+   | yolov8s-pose, rewritten graph | 960×544 | 53 ms (79 ms right after load) | 105 s |
+
+   For scale, YOLOX-s with ReLU ran 960×544 in about 14 ms on an ARTPEC-9 camera. SiLU costs real time even
+   when everything stays on the DLPU.
+
 ## Ambarella CV25 / CV75
 
 - **Toolchain:** Ambarella's CNNGen toolchain is not publicly available; Axis says to contact
@@ -230,6 +276,14 @@ journalctl -u larod                                           # load errors land
 
 `larod-client -a` lists devices, `-R <n>` repeats jobs and reports the mean job time, and `-o` writes
 outputs to a file ([larod-client](https://developer.axis.com/acap/api/src/api/larod/html/md_doc_larod-client.html)).
+
+**Self-test inside the app (empirical, recommended):** larod-client needs a shell, which an AXIS OS 13
+device may not give you. Bundle one representative input (raw RGB at the model size) with the people or
+boxes the *host* TFLite reference kernels decode from it. Run it at app start-up on the DLPU and expose the
+difference (matched objects, mean/max keypoint or box error, score error) through the app's status API.
+Then every deploy answers "does this firmware compute this graph correctly?" without anyone looking at
+video. The host's `OpResolverType.BUILTIN_REF` interpreter is a valid reference: it matched the camera's
+`cpu-tflite` backend bit for bit in an earlier ARTPEC-9 project.
 
 Facts from the [Larod NN inference](https://developer.axis.com/acap/acap-native-sdk-version-12/api/src/api/larod/html/md__opt_builder-doc_larod_doc_nn-inference.html)
 documentation worth knowing before you ship:
@@ -337,6 +391,7 @@ camera model you will ship.
 - [Axis Model Zoo](https://github.com/AxisCommunications/axis-model-zoo) and its
   [YOLOv5 guide](https://github.com/AxisCommunications/axis-model-zoo/blob/main/docs/yolov5.md) —
   benchmarks, YOLOv5 export flags and patches, licensing.
+- **Community, not official:** [detectx-2tier](https://github.com/pandosme/detectx-2tier) (YOLOv8 on ARTPEC-9 needs AXIS OS 13) and [YOLOv8-on-AXIS-ACAP](https://github.com/kotyzap/YOLOv8-on-AXIS-ACAP) (split outputs to escape the shared-scale trap).
 - **Reported, not official:** GitHub issues
   [#140](https://github.com/AxisCommunications/acap-computer-vision-sdk-examples/issues/140),
   [#141](https://github.com/AxisCommunications/acap-computer-vision-sdk-examples/issues/141) (2023) and

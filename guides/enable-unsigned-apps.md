@@ -56,6 +56,17 @@ suddenly returns `Error:2`, suspect a reset (or a firmware upgrade) rather than 
 also restarts the bundled analytics, which can separately break a DLPU app — see
 [dlpu-memory-contention.md](./dlpu-memory-contention.md).
 
+## AXIS OS 13 (observed)
+
+On an AXIS P3288-LVE with AXIS OS 13.1.19 (November 2026) the parameter still exists:
+`config.cgi?action=get&name=AllowUnsigned` answers `value="false"`. The device also served VAPIX only
+over HTTPS (port 80 closed), so use `https://` and `-k` for its self-signed certificate. A sibling project
+reported that an unsigned schema-v1 package did not install on AXIS OS 13 even with the toggle on.
+Unsigned installs there go through the [Developer Mode app](https://www.axis.com/es-es/for-developers/news/acap-developer-mode)
+(requested per camera with a My Axis account). Otherwise, sign the package (see
+[acap-application-signing.md](./acap-application-signing.md)). This wasn't re-tested here: the toggle was
+left untouched.
+
 ## Notes
 
 - This is the supported programmatic path; no GUI interaction is required.
